@@ -10,7 +10,10 @@ class IntentDataHandler(private val intent: Intent) {
 
     fun getValue(): String = intent.getStringExtra("value") ?: "1234.5"
 
-    fun isEdit(): Boolean = intent.getBooleanExtra("isedit", false)
+
+
+    fun isEditEnabled   (): Boolean = intent.getBooleanExtra("editEnable", true)
+
 
     fun getImagePath(): String = intent.getStringExtra("image_path") ?: "/images/integrity.png"
 

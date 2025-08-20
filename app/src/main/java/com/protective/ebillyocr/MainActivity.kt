@@ -145,6 +145,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
         val serviceId: String,
         val valType: String,
         val savedFileName: String,
+        val editEnable: Boolean,
         val useColorProcessing: Boolean = DEFAULT_USE_COLOR_PROCESSING
     ) {
         companion object {
@@ -152,12 +153,16 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
                 val dataHandler = IntentDataHandler(intent)
                 val serviceId = dataHandler.getServiceId()
                 val valType = dataHandler.getValType()
+                val isEditEnabled=dataHandler.isEditEnabled()
                 val useColor = intent.getBooleanExtra("use_color_processing", DEFAULT_USE_COLOR_PROCESSING)
+
+
 
                 return AppConfig(
                     serviceId = serviceId,
                     valType = valType,
                     savedFileName = "${serviceId}_${valType}",
+                    isEditEnabled,
                     useColorProcessing = useColor
                 )
             }
@@ -191,7 +196,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
 
         // Check date range for app activation
         val startDate = "2025-02-01"
-        val endDate = "2025-07-30"
+        val endDate = "2025-08-30"
 
         AppLogger.d("App activation period: $startDate to $endDate")
         logAutoRotationStatus()
@@ -278,6 +283,8 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
 
         // Set title with version
         titleTextView.text = "Ebilly OCR ${getVersionName()}"
+
+        //cameraManager.setZoom(50/100f)
     }
     private fun setupDecimalCheckbox() {
         decimalCheckBox.setOnCheckedChangeListener { _, isChecked ->
@@ -471,6 +478,8 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
         try {
             cameraManager = CameraManager(this, this, previewView, roiOverlay)
 
+
+
             // Observe camera capture results
             lifecycleScope.launch {
                 cameraManager.captureResult.collectLatest { result ->
@@ -483,10 +492,18 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
 
             cameraManager.initialize()
 
+
+
+
             // Set initial exposure
             if (::cameraManager.isInitialized) {
                 exposureSeekBar.progress = 50
+
+               zoomSeekBar.progress=50
+//                val zoomLevel = zoomSeekBar.progress / 100f
+//                cameraManager.setZoom(zoomLevel)
             }
+            AppLogger.d("Camera initialized")
         } catch (e: Exception) {
             AppLogger.e("Failed to initialize camera", e)
             showError("Failed to initialize camera: ${e.message}")
@@ -587,7 +604,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
                 currentMeterReading = reading
                 resultImageView.setImageBitmap(resultBitmap)
 
-                readingTextView.text = if (reading.isNullOrEmpty()) {
+                readingTextView.text = if (reading.isEmpty()) {
                     "No meter detected"
                 } else {
                     reading
@@ -604,10 +621,10 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
             } catch (e: Exception) {
                 AppLogger.e("Processing failed", e)
                 readingTextView.text = "Processing failed: ${e.message}"
-                processButton.isEnabled = true
+                processButton.isEnabled = false
             } finally {
                 progressBar.visibility = View.GONE
-                processButton.isEnabled = true
+                processButton.isEnabled = false
             }
         }
     }
@@ -774,7 +791,14 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
 
         AppLogger.d("Retake Count: $retakeCount",TAG)
 
-        if(retakeCount>=3){
+        if(appConfig.editEnable){
+            AppLogger.d("Editable is true",TAG)
+        }
+        else{
+            AppLogger.d("Editable is false",TAG)
+        }
+
+        if((retakeCount>=3 && appConfig.editEnable) || (retakeCount>=1 && appConfig.valType=="RMD") ){
             editFlag = true
             showNumericBottomDialog()
         }
@@ -1072,7 +1096,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
 
     private fun resetProcessingUI() {
         progressBar.visibility = View.GONE
-        processButton.isEnabled = true
+        processButton.isEnabled = false
         saveButton.isEnabled = true
     }
 

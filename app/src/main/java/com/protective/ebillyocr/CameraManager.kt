@@ -212,6 +212,20 @@ class CameraManager(
             Log.e(tag, "Use case binding failed: ${e.message}", e)
             Toast.makeText(context, "Failed to bind camera: ${e.message}", Toast.LENGTH_SHORT).show()
         }
+        // After camera is bound
+        camera?.let { cam ->
+            // Get zoom range
+            val zoomState = cam.cameraInfo.zoomState.value
+            val minZoom = zoomState?.minZoomRatio ?: 1f
+            val maxZoom = zoomState?.maxZoomRatio ?: 1f
+
+            // Calculate 50% zoom (halfway between min and max)
+            val targetZoom = minZoom + (maxZoom - minZoom) * 0.5f
+
+            // Set the zoom
+            cam.cameraControl.setZoomRatio(targetZoom)
+        }
+
     }
 
     /**
