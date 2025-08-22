@@ -516,12 +516,76 @@ class CameraManager(
 //            Toast.makeText(context, "Failed to save image: ${e.message}", Toast.LENGTH_SHORT).show()
 //        }
 //    }
+//    fun saveImage(
+//        result: CaptureResult,
+//        meterReading: String? = null,
+//        savedFilename: String? = null,
+//        isEdited: Boolean = false
+//    ): String? {
+//        try {
+//            Log.d(tag, "Saving Image...................")
+//            // Convert bitmap to JPEG bytes
+//            val outputStream = ByteArrayOutputStream()
+//            result.modelBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+//            val jpegBytes = outputStream.toByteArray()
+//
+//            val currentTimeMillis = System.currentTimeMillis()
+//
+//
+//            // Generate image file name
+//            val fileName = "${savedFilename}_$currentTimeMillis.jpg"
+//
+//            // Save to storage
+//            val (uri, stream) = FileUtils.createOrUpdateImageFile(
+//                context,
+//                fileName,
+//                "npdcl",
+//                "image/jpeg"
+//            )
+//
+//            Log.d(tag, "image URL: $uri")
+//
+//            if (uri != null && stream != null) {
+//                // Write JPEG data to file
+//                stream.write(jpegBytes)
+//                stream.close()
+//
+//                // Get and log the absolute file path
+//                val filePath = getRealPathFromUri(context, uri)
+//                Log.d(tag, "Saved image absolute path: $filePath")
+//
+//                // Save metadata with isEdited flag
+//                val fileManager = FileManager(context)
+//
+//               // fileManager.saveJsonMetadata(filePath.toString(), result.timestamp, meterReading, savedFilename, isEdited)
+//                fileManager.notifyGallery(uri)
+//
+//                Toast.makeText(context, "Image saved successfully", Toast.LENGTH_SHORT).show()
+//
+//                return filePath
+//            } else {
+//                Toast.makeText(context, "Failed to create output file", Toast.LENGTH_SHORT).show()
+//            }
+//        } catch (e: Exception) {
+//            Log.e(tag, "Failed to save image: ${e.message}", e)
+//            Toast.makeText(context, "Failed to save image: ${e.message}", Toast.LENGTH_SHORT).show()
+//        }
+//
+//        return null
+//    }
+
+
+    data class SaveImageResult(
+        val filePath: String?,
+        val uri: Uri?
+    )
+
     fun saveImage(
         result: CaptureResult,
         meterReading: String? = null,
         savedFilename: String? = null,
         isEdited: Boolean = false
-    ): String? {
+    ): SaveImageResult {
         try {
             Log.d(tag, "Saving Image...................")
             // Convert bitmap to JPEG bytes
@@ -530,7 +594,6 @@ class CameraManager(
             val jpegBytes = outputStream.toByteArray()
 
             val currentTimeMillis = System.currentTimeMillis()
-
 
             // Generate image file name
             val fileName = "${savedFilename}_$currentTimeMillis.jpg"
@@ -556,13 +619,11 @@ class CameraManager(
 
                 // Save metadata with isEdited flag
                 val fileManager = FileManager(context)
-
-               // fileManager.saveJsonMetadata(filePath.toString(), result.timestamp, meterReading, savedFilename, isEdited)
                 fileManager.notifyGallery(uri)
 
                 Toast.makeText(context, "Image saved successfully", Toast.LENGTH_SHORT).show()
 
-                return filePath
+                return SaveImageResult(filePath, uri)
             } else {
                 Toast.makeText(context, "Failed to create output file", Toast.LENGTH_SHORT).show()
             }
@@ -571,7 +632,7 @@ class CameraManager(
             Toast.makeText(context, "Failed to save image: ${e.message}", Toast.LENGTH_SHORT).show()
         }
 
-        return null
+        return SaveImageResult(null, null)
     }
 
     // Helper function to get absolute path from URI

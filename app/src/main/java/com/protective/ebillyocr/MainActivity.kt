@@ -32,6 +32,7 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import android.provider.Settings
 import android.widget.CheckBox
 
@@ -87,6 +88,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
     private lateinit var resultLayout: LinearLayout
     private lateinit var resultImageView: ImageView
     private lateinit var readingTextView: TextView
+    private lateinit var decimaltextView: TextView
     private lateinit var titleTextView: TextView
 
     private lateinit var serviceIdTextView: TextView
@@ -117,6 +119,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
     private val inputNumber = StringBuilder()
     private var tapCount = 0
     private var retakeCount = 0
+    private var decimalPosition = 0 // Track current decimal position
     private var editFlag = false
     private var originalReadingValue: String = ""
     // Image Processing State - DEFAULT TO COLOR PROCESSING
@@ -196,7 +199,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
 
         // Check date range for app activation
         val startDate = "2025-02-01"
-        val endDate = "2025-08-30"
+        val endDate = "2025-09-30"
 
         AppLogger.d("App activation period: $startDate to $endDate")
         logAutoRotationStatus()
@@ -276,6 +279,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
         processButton = findViewById(R.id.processButton)
         titleTextView = findViewById(R.id.titleTextView)
         decimalCheckBox = findViewById(R.id.decimalCheckBox)
+        decimaltextView=findViewById(R.id.decimalTextbox)
 
         setupClickListeners()
         setupSeekBarListeners()
@@ -298,6 +302,68 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
                 removeDecimalFromReading(currentText)
             }
         }
+    }
+
+
+
+    private fun addDecimalFromRight(reading: String) {
+        // Skip if reading is empty or too short
+        if (reading.isEmpty() || reading.length < 2) {
+            return
+        }
+
+        // Remove existing decimal if present
+        val cleanReading = reading.replace(".", "")
+
+        // Store original value if not already stored
+        if (originalReadingValue.isEmpty()) {
+            originalReadingValue = cleanReading
+        }
+
+        // Calculate decimal position from right (cycles through valid positions)
+        val maxPosition = cleanReading.length - 1
+        decimalPosition = if (decimalPosition >= maxPosition) 1 else decimalPosition + 1
+
+        // Insert decimal at position from right
+        val insertPosition = cleanReading.length - decimalPosition
+        val withDecimal = cleanReading.substring(0, insertPosition) + "." +
+                cleanReading.substring(insertPosition)
+
+        readingTextView.text = withDecimal
+        currentMeterReading = withDecimal
+    }
+
+
+
+    private fun addDecimalFromLeft(reading: String) {
+        // Skip if reading is empty or too short
+        if (reading.isEmpty() || reading.length < 2) {
+            return
+        }
+
+        // Remove existing decimal if present
+        val cleanReading = reading.replace(".", "")
+
+        // Store original value if not already stored
+        if (originalReadingValue.isEmpty()) {
+            originalReadingValue = cleanReading
+        }
+
+        // Calculate decimal position (cycles through valid positions)
+        val maxPosition = cleanReading.length - 1
+        decimalPosition = (decimalPosition % maxPosition) + 1
+
+        // Insert decimal at current position
+        val withDecimal = cleanReading.substring(0, decimalPosition) + "." +
+                cleanReading.substring(decimalPosition)
+
+        readingTextView.text = withDecimal
+        currentMeterReading = withDecimal
+    }
+
+    // Optional: Reset decimal position when needed
+    private fun resetDecimalPosition() {
+        decimalPosition = 0
     }
 
     private fun addDecimalToReading(reading: String) {
@@ -365,6 +431,14 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
 
 
     private fun setupClickListeners() {
+
+        decimaltextView.setOnClickListener {
+
+            val currentText = readingTextView.text.toString()
+            addDecimalFromRight(currentText)
+
+            AppLogger.d("You Cliked me")
+        }
         captureButton.setOnClickListener {
             AppLogger.logUserAction("capture_clicked", mapOf("valType" to appConfig.valType))
             captureImage()
@@ -924,6 +998,42 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
     // Save and Results Methods
     // ===========================================
 
+//    private fun saveCurrentImage() {
+//        val result = currentCaptureResult ?: return
+//
+//        saveButton.isEnabled = false
+//        progressBar.visibility = View.VISIBLE
+//        readingTextView.text = "Saving..."
+//
+//        lifecycleScope.launch {
+//            try {
+//                val meterReading = currentMeterReading.toString()
+//               // val meterReading = readingTextView.text.toString()
+//                val imagePath = cameraManager.saveImage(
+//                    result,
+//                    currentMeterReading,
+//                    appConfig.savedFileName,
+//                    editFlag
+//                ).toString()
+//
+//                AppLogger.d("Image saved at: $imagePath")
+//                AppLogger.logUserAction("image_saved", mapOf(
+//                    "reading" to meterReading,
+//                    "edited" to editFlag,
+//                    "path" to imagePath
+//                ))
+//
+//                sendBackResults(meterReading, imagePath)
+//
+//            } catch (e: Exception) {
+//                AppLogger.e("Failed to save image", e)
+//                showError("Failed to save image: ${e.message}")
+//                saveButton.isEnabled = true
+//                progressBar.visibility = View.GONE
+//            }
+//        }
+//    }
+
     private fun saveCurrentImage() {
         val result = currentCaptureResult ?: return
 
@@ -934,36 +1044,67 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
         lifecycleScope.launch {
             try {
                 val meterReading = currentMeterReading.toString()
-               // val meterReading = readingTextView.text.toString()
-                val imagePath = cameraManager.saveImage(
+
+                val saveResult = cameraManager.saveImage(
                     result,
                     currentMeterReading,
                     appConfig.savedFileName,
                     editFlag
-                ).toString()
+                )
 
-                AppLogger.d("Image saved at: $imagePath")
-                AppLogger.logUserAction("image_saved", mapOf(
-                    "reading" to meterReading,
-                    "edited" to editFlag,
-                    "path" to imagePath
-                ))
+                if (saveResult.filePath != null && saveResult.uri != null) {
+                    AppLogger.d("Image saved at: ${saveResult.filePath}")
+                    AppLogger.d("Image URI: ${saveResult.uri}")
 
-                sendBackResults(meterReading, imagePath)
+                    AppLogger.logUserAction("image_saved", mapOf(
+                        "reading" to meterReading,
+                        "edited" to editFlag,
+                        "path" to saveResult.filePath,
+                        "uri" to saveResult.uri.toString()
+                    ))
+
+                    sendBackResults(meterReading, saveResult.filePath, saveResult.uri)
+                } else {
+                    throw Exception("Failed to save image - null path or URI returned")
+                }
 
             } catch (e: Exception) {
                 AppLogger.e("Failed to save image", e)
                 showError("Failed to save image: ${e.message}")
+            } finally {
                 saveButton.isEnabled = true
                 progressBar.visibility = View.GONE
             }
         }
     }
 
-    private fun sendBackResults(meterReading: String, imagePath: String) {
+//    private fun sendBackResults(meterReading: String, imagePath: String) {
+//        val metadata = JSONObject().apply {
+//            put("meterReading", meterReading)
+//            put("filename", imagePath)
+//            put("isEdited", editFlag)
+//            put("valType", appConfig.valType)
+//            put("serviceId", appConfig.serviceId)
+//            put("processingMode", if (isProcessingInGrayscale) "grayscale" else "color")
+//        }
+//
+//        val resultCode = getResultCode(appConfig.valType)
+//        intent.putExtra("metadata", metadata.toString())
+//        setResult(resultCode, intent)
+//
+//        AppLogger.d("Sending results: code=$resultCode, metadata=$metadata")
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            delay(PROCESSING_DELAY_MS)
+//            finish()
+//        }
+//    }
+
+    private fun sendBackResults(meterReading: String, imagePath: String, imageUri: Uri) {
         val metadata = JSONObject().apply {
             put("meterReading", meterReading)
             put("filename", imagePath)
+            put("imageUri", imageUri.toString())
             put("isEdited", editFlag)
             put("valType", appConfig.valType)
             put("serviceId", appConfig.serviceId)
