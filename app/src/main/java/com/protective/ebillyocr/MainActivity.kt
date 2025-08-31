@@ -335,6 +335,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
             lifecycleScope.launch {
                 delay(3000)
                 if (dialog.isShowing && !isDestroyed) {
+                    showNumericBottomDialog()
                     dialog.dismiss()
                 }
             }
@@ -985,7 +986,8 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
 
         if ((retakeCount >= 3 && appConfig.editEnable) || (retakeCount >= 1 && appConfig.valType == "RMD")) {
             editFlag = true
-            showNumericBottomDialog()
+            showEditEnabledDialog()
+
         }
     }
 
@@ -1327,7 +1329,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
     }
 
     private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun cleanupBitmaps() {
