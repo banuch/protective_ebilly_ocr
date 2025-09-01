@@ -335,7 +335,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
             lifecycleScope.launch {
                 delay(3000)
                 if (dialog.isShowing && !isDestroyed) {
-                    showNumericBottomDialog()
+                    //showNumericBottomDialog()
                     dialog.dismiss()
                 }
             }
@@ -491,7 +491,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
             AppLogger.logUserAction("process_clicked")
             retakeCount++
 
-            if (retakeCount == 3) {
+            if (retakeCount == 3 || appConfig.valType == "RMD") {
                 showEditEnabledDialog()
             }
 
@@ -986,7 +986,8 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
 
         if ((retakeCount >= 3 && appConfig.editEnable) || (retakeCount >= 1 && appConfig.valType == "RMD")) {
             editFlag = true
-            showEditEnabledDialog()
+            //showEditEnabledDialog()
+            showNumericBottomDialog()
 
         }
     }
