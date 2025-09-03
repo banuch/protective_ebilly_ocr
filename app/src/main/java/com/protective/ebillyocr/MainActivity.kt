@@ -335,7 +335,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
             lifecycleScope.launch {
                 delay(3000)
                 if (dialog.isShowing && !isDestroyed) {
-                    //showNumericBottomDialog()
+                    showNumericBottomDialog()
                     dialog.dismiss()
                 }
             }
