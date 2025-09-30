@@ -381,34 +381,62 @@
 
             </LinearLayout>
 
-            <!-- Result Action Buttons -->
+            <!-- Result Action Buttons - Two Rows Layout -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:gravity="center"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/retakeButton"
-                    android:layout_width="wrap_content"
+                <!-- First Row: Retake and Process -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:text="Retake" />
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
 
-                <Button
-                    android:id="@+id/processButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:enabled="true"
-                    android:text="Process" />
+                    <Button
+                        android:id="@+id/retakeButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:text="Retake" />
 
-                <Button
-                    android:id="@+id/saveButton"
-                    android:layout_width="wrap_content"
+                    <Button
+                        android:id="@+id/processButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:enabled="true"
+                        android:text="Process" />
+                </LinearLayout>
+
+                <!-- Second Row: Modes and Save -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Save" />
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/modesButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:text="Modes"  />
+
+                    <Button
+                        android:id="@+id/saveButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:text="Save" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>

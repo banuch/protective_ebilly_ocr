@@ -21,6 +21,7 @@
     <string name="add_decimal_value">Add Decimal value to reading</string>
     <string name="retake">Retake</string>
     <string name="process">Process</string>
+    <string name="modes">Modes</string>
     <string name="save">Save</string>
     <string name="service_id">Service ID:</string>
     <string name="value_type">Value Type:</string>

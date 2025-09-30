@@ -110,6 +110,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
     private lateinit var saveButton: Button
     private lateinit var retakeButton: Button
     private lateinit var processButton: Button
+    private lateinit var modesButton: Button
 
     // ===========================================
     // Core Components
@@ -271,6 +272,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
         captureButton = findViewById(R.id.captureButton)
         flashButton = findViewById(R.id.flashButton)
         switchButton = findViewById(R.id.switchButton)
+        modesButton = findViewById(R.id.modesButton)  // Add this line
         zoomSeekBar = findViewById(R.id.zoomSeekBar)
         exposureSeekBar = findViewById(R.id.exposureSeekBar)
         progressBar = findViewById(R.id.progressBar)
@@ -512,6 +514,10 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
                 resetExposure()
                 true
             }
+        }
+        modesButton.setOnClickListener {
+            AppLogger.logUserAction("modes_button_clicked")
+            showProcessingOptionsDialog()
         }
     }
 
@@ -946,24 +952,24 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
         try {
             if (!isGrayscaleDisplayMode) {
                 // Switch to grayscale display
-                val currentBitmap = originalResultBitmap ?: result.roiBitmap
-                val grayscaleBitmap =
-                    convertToGrayscaleAdvanced(currentBitmap, GrayscaleEnhancement.CONTRAST)
+                val currentBitmap = result.roiBitmap
+                val grayscaleBitmap = convertToGrayscaleAdvanced(currentBitmap, GrayscaleEnhancement.CONTRAST)
 
+                // Store original if not already stored
                 if (originalResultBitmap == null) {
-                    originalResultBitmap = (resultImageView.drawable as? BitmapDrawable)?.bitmap
+                    originalResultBitmap = result.roiBitmap.copy(Bitmap.Config.ARGB_8888, false)
                 }
 
                 resultImageView.setImageBitmap(grayscaleBitmap)
                 isGrayscaleDisplayMode = true
-                showToast("Grayscale display mode")
+                showToast("Grayscale mode")
 
             } else {
                 // Switch back to color display
                 val originalBitmap = originalResultBitmap ?: result.roiBitmap
                 resultImageView.setImageBitmap(originalBitmap)
                 isGrayscaleDisplayMode = false
-                showToast("Color display mode")
+                showToast("Color mode")
             }
         } catch (e: Exception) {
             AppLogger.e("Failed to toggle display mode", e)
