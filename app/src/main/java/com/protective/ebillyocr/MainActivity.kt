@@ -212,7 +212,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
 
         // Check date range for app activation
         val startDate = "2025-02-01"
-        val endDate = "2025-10-30"
+        val endDate = "2026-03-30"
 
         AppLogger.d("App activation period: $startDate to $endDate")
         logAutoRotationStatus()
@@ -493,7 +493,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
             AppLogger.logUserAction("process_clicked")
             retakeCount++
 
-            if (retakeCount == 3 || appConfig.valType == "RMD") {
+            if (retakeCount == 1 || appConfig.valType == "RMD") {
                 showEditEnabledDialog()
             }
 
@@ -990,7 +990,7 @@ class MainActivity : AppCompatActivity(), PermissionManager.PermissionListener {
             AppLogger.d("Editable is false", TAG)
         }
 
-        if ((retakeCount >= 3 && appConfig.editEnable) || (retakeCount >= 1 && appConfig.valType == "RMD")) {
+        if ((retakeCount >= 0 && appConfig.editEnable) || (retakeCount >= 1 && appConfig.valType == "RMD")) {
             editFlag = true
             //showEditEnabledDialog()
             showNumericBottomDialog()
